@@ -1,0 +1,103 @@
+.create-folder-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+.create-folder-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  background: var(--bg-primary);
+  z-index: 50;
+}
+.create-folder-header .back-btn {
+  background: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+.create-folder-header h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.create-folder-content {
+  padding: 32px 20px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.create-folder-icon-wrapper {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.create-folder-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: var(--accent-blue);
+}
+.create-folder-icon-wrapper p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.create-folder-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--accent-red);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+}
+.create-folder-page .form-group {
+  margin-bottom: 24px;
+}
+.create-folder-page .form-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.create-folder-page .form-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+.create-folder-page .form-input:focus {
+  border-color: var(--accent-blue);
+}
+.create-folder-page .form-input::placeholder {
+  color: var(--text-muted);
+}
+.btn-create {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-create:hover:not(:disabled) {
+  background: var(--accent-blue-hover);
+}
+.btn-create:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
