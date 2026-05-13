@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
         long totalCorrect = quizRepository.sumCorrectAnswers(user);
         long totalQuestions = quizRepository.sumTotalQuestions(user);
 
-        // Find best quiz score
+
         int bestScore = 0;
         int bestTotal = 0;
         List<Quiz> quizzes = quizRepository.findAllByUserOrderByCreatedAtDesc(user);
@@ -94,7 +94,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // Calculate study streak from quiz dates
+
         Set<LocalDate> studyDays = new TreeSet<>();
         for (Quiz q : quizzes) {
             if (q.getCreatedAt() != null) {
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
         if (!studyDays.isEmpty()) {
             LocalDate today = LocalDate.now();
             LocalDate check = today;
-            // Current streak: count consecutive days ending today or yesterday
+
             if (studyDays.contains(today)) {
                 while (studyDays.contains(check)) {
                     currentStreak++;
@@ -121,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 }
             }
 
-            // Longest streak
+            // chuoi streak dai nhat
             int streak = 0;
             LocalDate prev = null;
             for (LocalDate day : studyDays) {
@@ -159,7 +159,7 @@ public class UserServiceImpl implements UserService {
         LocalDateTime since30 = now.minusDays(29).toLocalDate().atStartOfDay();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // --- Daily activity: last 30 days ---
+
         List<Quiz> recentAll = quizRepository.findByUserAndCreatedAtAfter(user, since30);
 
         Map<String, Integer> dayMap = new LinkedHashMap<>();
@@ -174,7 +174,7 @@ public class UserServiceImpl implements UserService {
                 .map(e -> new DailyActivityResponse(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
 
-        // --- Recent quiz history: last 20 quizzes ---
+
         List<Quiz> allQuizzes = quizRepository.findAllByUserOrderByCreatedAtDesc(user);
         List<QuizHistoryPoint> recentQuizzes = allQuizzes.stream()
                 .limit(20)
@@ -192,7 +192,7 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
 
-        // --- Overall stats ---
+
         long totalCards   = flashcardRepository.countByUser(user);
         long totalSets    = flashcardSetRepository.countByUser(user);
         long totalQuizzes = quizRepository.countByUser(user);
@@ -201,7 +201,7 @@ public class UserServiceImpl implements UserService {
         int accuracy = totalQuestions > 0
                 ? (int) Math.round((double) totalCorrect / totalQuestions * 100) : 0;
 
-        // --- Streak (reuse logic from getMyStats) ---
+
         Set<LocalDate> studyDays = new TreeSet<>();
         for (Quiz q : allQuizzes) {
             if (q.getCreatedAt() != null) studyDays.add(q.getCreatedAt().toLocalDate());
@@ -221,7 +221,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // --- SRS overall ---
+        
         long srsTracked = userProgressRepository.countAllTrackedCards(user);
         long srsLearned = userProgressRepository.countAllLearnedCards(user, now);
         long srsDue     = userProgressRepository.countAllDueCards(user, now);

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Layers, Mail, Lock, Eye, EyeOff, X } from "lucide-react";
 import { login, saveAuth } from "../services/authService";
-import ThemeToggle from "../components/ThemeToggle";
 import "./Login.css";
 
 export default function Login() {
@@ -41,9 +40,7 @@ export default function Login() {
       >
         <X size={24} />
       </button>
-      <div className="login-theme-toggle">
-        <ThemeToggle />
-      </div>
+
       <div className="login-container">
         <div className="login-icon">
           <Layers size={32} />

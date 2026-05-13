@@ -10,7 +10,6 @@ import {
   X,
 } from "lucide-react";
 import { register, saveAuth, saveEmail } from "../services/authService";
-import ThemeToggle from "../components/ThemeToggle";
 import "./Register.css";
 
 export default function Register() {
@@ -73,9 +72,6 @@ export default function Register() {
       >
         <X size={24} />
       </button>
-      <div className="register-theme-toggle">
-        <ThemeToggle />
-      </div>
       <header className="register-header">
         <h1>Tạo Tài Khoản</h1>
       </header>

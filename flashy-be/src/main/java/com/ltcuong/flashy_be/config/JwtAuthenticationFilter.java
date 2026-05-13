@@ -40,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
         final String jti = jwtService.extractJti(jwt);
 
-        // Từ chối token đã bị logout
+        // token logout thi tu choi
         if (jti != null && invalidatedTokenRepository.existsById(jti)) {
             filterChain.doFilter(request, response);
             return;

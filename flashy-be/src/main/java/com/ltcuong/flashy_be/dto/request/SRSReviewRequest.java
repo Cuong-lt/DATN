@@ -14,7 +14,6 @@ public class SRSReviewRequest {
     private Long flashcardId;
 
     /**
-     * Chất lượng trả lời theo SM-2:
      * 0 = Again (không nhớ gì)
      * 1 = Hard  (nhớ nhưng khó)
      * 3 = Good  (nhớ tốt)

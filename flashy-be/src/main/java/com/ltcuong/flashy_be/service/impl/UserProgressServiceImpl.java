@@ -62,10 +62,10 @@ public class UserProgressServiceImpl implements UserProgressService {
         FlashcardSet set = flashcardSetRepository.findById(setId)
                 .orElseThrow(() -> new AppException(ErrorCode.SET_NOT_FOUND));
 
-        // Lấy các thẻ đến hạn (nextReview <= now hoặc chưa có tiến trình)
+
         List<UserProgress> dueProgress = userProgressRepository.findDueCards(user, setId, LocalDateTime.now());
 
-        // Thẻ chưa bao giờ học (chưa có UserProgress)
+
         List<Flashcard> allCards = flashcardRepository.findAllByFlashcardSet(set);
         List<Long> trackedIds = userProgressRepository.findAllByUserAndSetId(user, setId)
                 .stream().map(up -> up.getFlashcard().getId()).collect(Collectors.toList());
@@ -74,7 +74,7 @@ public class UserProgressServiceImpl implements UserProgressService {
                 .filter(fc -> !trackedIds.contains(fc.getId()))
                 .collect(Collectors.toList());
 
-        // Gộp: thẻ đến hạn + thẻ mới
+
         List<SRSCardResponse> result = dueProgress.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -119,13 +119,13 @@ public class UserProgressServiceImpl implements UserProgressService {
         double easeFactor = progress.getEaseFactor() != null ? progress.getEaseFactor() : DEFAULT_EASE_FACTOR;
         int intervalDays;
 
-        // SM-2 Algorithm
+// thuat toan ghi nho
         if (quality < 3) {
-            // Chưa nhớ: reset về đầu
+
             repetition = 0;
             intervalDays = 1;
         } else {
-            // Nhớ được: tính interval theo lần lặp
+
             if (repetition == 0) {
                 intervalDays = 1;
             } else if (repetition == 1) {
@@ -137,11 +137,11 @@ public class UserProgressServiceImpl implements UserProgressService {
             repetition++;
         }
 
-        // Cập nhật ease factor
+
         easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
         easeFactor = Math.max(MIN_EASE_FACTOR, easeFactor);
 
-        // Cập nhật tiến trình
+
         progress.setRepetition(repetition);
         progress.setEaseFactor(easeFactor);
         progress.setIntervalDays(intervalDays);

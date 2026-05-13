@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class QuizHistoryPoint {
-    private String date;       // "yyyy-MM-dd"
+    private String date;
     private String setTitle;
     private int score;
     private int total;

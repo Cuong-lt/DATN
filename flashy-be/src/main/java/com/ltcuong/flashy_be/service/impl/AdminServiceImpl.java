@@ -98,7 +98,6 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        // Prevent admin from deleting themselves
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
