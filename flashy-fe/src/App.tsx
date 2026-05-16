@@ -18,6 +18,7 @@ import Statistics from './pages/Statistics';
 import Quiz from './pages/Quiz';
 import Match from './pages/Match';
 import QuizResults from './pages/QuizResults';
+import FillBlank from './pages/FillBlank';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
 import MainLayout from './layouts/MainLayout';
@@ -53,6 +54,7 @@ function App() {
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/match" element={<Match />} />
             <Route path="/quiz-results" element={<QuizResults />} />
+            <Route path="/fill-blank" element={<FillBlank />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/statistics" element={<Statistics />} />

@@ -89,7 +89,9 @@ export default function Quiz() {
           setStudySet(res.data);
         }
       })
-      .catch(() => setError("Failed to load study set"))
+      .catch(() =>
+        setError("Bộ thẻ không tồn tại hoặc bạn không có quyền truy cập."),
+      )
       .finally(() => setLoading(false));
   }, [setId]);
 

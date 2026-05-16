@@ -88,7 +88,9 @@ export default function StudySetDetail() {
             .catch(() => {});
         }
       })
-      .catch(() => setError("Failed to load study set"))
+      .catch(() =>
+        setError("Bộ thẻ không tồn tại hoặc bạn không có quyền truy cập."),
+      )
       .finally(() => setLoading(false));
 
     getSRSStats(setId)
@@ -284,28 +286,31 @@ export default function StudySetDetail() {
           <Link to={`/match?id=${studySet.id}`} className="btn-match">
             <Shuffle size={18} /> Nối thẻ
           </Link>
+          <Link to={`/fill-blank?id=${studySet.id}`} className="btn-fill-blank">
+            <SlidersHorizontal size={18} /> Điền từ
+          </Link>
         </div>
 
         {/* Delete confirmation */}
         {showDeleteConfirm && (
           <div className="studyset-delete-confirm">
             <p>
-              Delete "<strong>{studySet.title}</strong>" and all its flashcards?
-              This cannot be undone.
+              Xóa "<strong>{studySet.title}</strong>" và tất cả các thẻ? Xóa
+              vĩnh viễn.
             </p>
             <div className="studyset-delete-actions">
               <button
                 className="btn-cancel"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancel
+                Hủy
               </button>
               <button
                 className="btn-confirm-delete"
                 onClick={handleDelete}
                 disabled={deleting}
               >
-                {deleting ? "Deleting..." : "Delete"}
+                {deleting ? "Đang xóa..." : "Xóa"}
               </button>
             </div>
           </div>
@@ -321,7 +326,7 @@ export default function StudySetDetail() {
         {studySet.flashcards.length === 0 ? (
           <div className="studyset-empty">
             <Layers size={40} />
-            <p>No flashcards yet. Add your first one!</p>
+            <p>Chưa có thẻ ghi nhớ nào. Thêm thẻ đầu tiên của bạn!</p>
           </div>
         ) : (
           <div className="terms-list">

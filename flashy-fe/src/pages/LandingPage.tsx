@@ -50,10 +50,8 @@ function HeroIllustration() {
         <circle cx="390" cy="55" r="45" fill="rgba(255,255,255,0.07)" />
         <circle cx="55" cy="290" r="60" fill="rgba(255,255,255,0.05)" />
 
-        {/* Shadow under desk */}
         <ellipse cx="240" cy="295" rx="195" ry="28" fill="rgba(0,0,0,0.13)" />
 
-        {/* Laptop base & screen */}
         <rect
           x="115"
           y="168"
@@ -109,7 +107,6 @@ function HeroIllustration() {
         />
         <rect x="225" y="255" width="72" height="26" rx="7" fill="#e2e8f0" />
 
-        {/* Person left */}
         <circle cx="98" cy="152" r="27" fill="#fbbf24" />
         <path
           d="M98 179 C85 210 62 248 55 275"
@@ -118,7 +115,7 @@ function HeroIllustration() {
           fill="none"
           strokeLinecap="round"
         />
-        {/* Floating mini-card left */}
+
         <rect
           x="16"
           y="92"
@@ -146,7 +143,6 @@ function HeroIllustration() {
           opacity="0.65"
         />
 
-        {/* Person right */}
         <circle cx="376" cy="142" r="27" fill="#f87171" />
         <path
           d="M376 169 C390 200 410 240 418 268"
@@ -155,7 +151,7 @@ function HeroIllustration() {
           fill="none"
           strokeLinecap="round"
         />
-        {/* Phone */}
+
         <rect
           x="396"
           y="210"
@@ -184,7 +180,6 @@ function HeroIllustration() {
           opacity="0.6"
         />
 
-        {/* Top floating card */}
         <rect
           x="370"
           y="52"
@@ -212,7 +207,6 @@ function HeroIllustration() {
           opacity="0.65"
         />
 
-        {/* Progress bar card */}
         <rect
           x="152"
           y="82"
@@ -289,7 +283,6 @@ function PhoneMockup() {
 export default function LandingPage() {
   return (
     <div className="landing">
-      {/* Navbar */}
       <header className="landing-header">
         <Link to="/" className="landing-logo">
           <Layers size={20} />
@@ -311,7 +304,6 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="landing-hero">
         <div className="hero-content">
           <h1 className="hero-title">
@@ -363,7 +355,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="landing-features" id="features">
         <h2 className="section-title">Công cụ cho sự xuất sắc học tập</h2>
         <p className="section-subtitle">
@@ -434,7 +425,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How it Works */}
       <section className="landing-steps" id="how-it-works">
         <h2 className="section-title">
           Con đường dẫn đến sự thành thạo của bạn
@@ -473,7 +463,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Showcase */}
       <section className="landing-showcase" id="showcase">
         <div className="showcase-phone-col">
           <PhoneMockup />
@@ -503,7 +492,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
       <section className="landing-testimonials" id="testimonials">
         <h2 className="section-title">
           Học sinh <span className="heart">♥</span> Flashy
@@ -536,7 +524,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <div className="cta-wrapper">
         <section className="landing-cta">
           <h2>Bắt đầu học hôm nay</h2>
@@ -553,7 +540,6 @@ export default function LandingPage() {
         </section>
       </div>
 
-      {/* Footer */}
       <footer className="landing-footer">
         <div className="footer-inner">
           <div className="footer-brand">

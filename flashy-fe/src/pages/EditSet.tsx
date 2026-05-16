@@ -81,7 +81,9 @@ export default function EditSet() {
 
         setCards(existingCards);
       })
-      .catch(() => setError("Failed to load study set"))
+      .catch(() =>
+        setError("Bộ thẻ không tồn tại hoặc bạn không có quyền chỉnh sửa."),
+      )
       .finally(() => setLoading(false));
   }, [setId]);
 

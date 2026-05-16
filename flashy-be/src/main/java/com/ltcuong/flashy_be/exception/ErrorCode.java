@@ -26,6 +26,7 @@ public enum ErrorCode {
     OTP_EXPIRED(3003, "OTP code has expired", HttpStatus.BAD_REQUEST),
     ACCOUNT_LOCKED(1010, "Your account has been locked", HttpStatus.FORBIDDEN),
     CANNOT_DELETE_SELF(1011, "You cannot delete your own admin account", HttpStatus.BAD_REQUEST),
+    AI_GENERATION_FAILED(5001, "AI generation failed. Please try again.", HttpStatus.INTERNAL_SERVER_ERROR),
     ;
 
     private int code;

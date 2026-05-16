@@ -221,7 +221,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        
+
         long srsTracked = userProgressRepository.countAllTrackedCards(user);
         long srsLearned = userProgressRepository.countAllLearnedCards(user, now);
         long srsDue     = userProgressRepository.countAllDueCards(user, now);

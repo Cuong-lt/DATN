@@ -10,12 +10,17 @@ import {
   Upload,
   X,
   FileSpreadsheet,
+  Sparkles,
 } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { createSet } from "../services/setService";
 import { createFlashcard } from "../services/flashcardService";
 import { getMyFolders, type FolderResponse } from "../services/folderService";
+import {
+  generateFlashcards,
+  type GeneratedFlashcard,
+} from "../services/aiService";
 import "./CreateSet.css";
 
 interface CardDraft {
@@ -45,6 +50,15 @@ export default function CreateSet() {
   const [cards, setCards] = useState<CardDraft[]>([makeCard(), makeCard()]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // AI generate modal state
+  const [aiModal, setAiModal] = useState(false);
+  const [aiText, setAiText] = useState("");
+  const [aiCardCount, setAiCardCount] = useState(10);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState("");
+  const [aiPreview, setAiPreview] = useState<GeneratedFlashcard[]>([]);
+  const [aiSelected, setAiSelected] = useState<Set<number>>(new Set());
 
   // Import modal state
   const [importModal, setImportModal] = useState(false);
@@ -78,6 +92,61 @@ export default function CreateSet() {
 
   const addCard = () => {
     setCards((prev) => [...prev, makeCard()]);
+  };
+
+  const openAiModal = () => {
+    setAiText("");
+    setAiCardCount(10);
+    setAiError("");
+    setAiPreview([]);
+    setAiSelected(new Set());
+    setAiModal(true);
+  };
+
+  const handleAiGenerate = async () => {
+    if (!aiText.trim()) {
+      setAiError("Please enter a topic or text.");
+      return;
+    }
+    setAiError("");
+    setAiLoading(true);
+    try {
+      const items = await generateFlashcards(aiText.trim(), aiCardCount);
+      if (items.length === 0) {
+        setAiError("No flashcards could be generated. Try a different topic.");
+        return;
+      }
+      setAiPreview(items);
+      setAiSelected(new Set(items.map((_, i) => i)));
+    } catch (err) {
+      const e = err as Record<string, unknown>;
+      const msg =
+        (e?.message as string) ||
+        "Generation failed. Please check your input and try again.";
+      setAiError(msg);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const toggleAiSelect = (index: number) => {
+    setAiSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  };
+
+  const confirmAiImport = () => {
+    const selected = aiPreview.filter((_, i) => aiSelected.has(i));
+    if (selected.length === 0) return;
+    setCards((prev) => {
+      const filled = prev.filter((c) => c.term || c.definition);
+      const imported = selected.map((c) => ({ ...makeCard(), ...c }));
+      return [...filled, ...imported, makeCard()];
+    });
+    setAiModal(false);
   };
 
   const openImport = () => {
@@ -159,7 +228,11 @@ export default function CreateSet() {
       const empty = prev.filter((c) => !c.term && !c.definition);
       const filled = prev.filter((c) => c.term || c.definition);
       const imported = newCards.map((c) => ({ ...makeCard(), ...c }));
-      return [...filled, ...imported, ...(empty.length > 0 ? [] : [makeCard()])];
+      return [
+        ...filled,
+        ...imported,
+        ...(empty.length > 0 ? [] : [makeCard()]),
+      ];
     });
     setImportModal(false);
   };
@@ -222,7 +295,7 @@ export default function CreateSet() {
         <button className="back-btn" onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
         </button>
-        <h1>Create Study Set</h1>
+        <h1>Tạo bộ thẻ học</h1>
         <button
           type="button"
           className="page-create-btn"
@@ -243,48 +316,48 @@ export default function CreateSet() {
             <input
               type="text"
               className="form-input title-input"
-              placeholder='Enter a title, like "Biology - Chapter 22: Evolution"'
+              placeholder='Nhập tiêu đề (ví dụ: "Bộ thẻ Sinh học 101")'
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
             />
-            <span className="form-hint">TITLE</span>
+            <span className="form-hint">TIÊU ĐỀ</span>
           </div>
 
           <div className="form-group">
             <textarea
               className="form-textarea"
-              placeholder="Add a description..."
+              placeholder="Thêm mô tả..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
             />
-            <span className="form-hint">DESCRIPTION</span>
+            <span className="form-hint">MÔ TẢ</span>
           </div>
 
           {/* Settings row */}
           <div className="settings-row">
             <div className="setting-item">
-              <label className="form-hint">VISIBILITY</label>
+              <label className="form-hint">Hiển thị</label>
               <div className="visibility-options">
                 <button
                   type="button"
                   className={`visibility-btn ${visibility === "private" ? "active" : ""}`}
                   onClick={() => setVisibility("private")}
                 >
-                  <Lock size={14} /> Private
+                  <Lock size={14} /> Riêng tư
                 </button>
                 <button
                   type="button"
                   className={`visibility-btn ${visibility === "public" ? "active" : ""}`}
                   onClick={() => setVisibility("public")}
                 >
-                  <Globe size={14} /> Public
+                  <Globe size={14} /> Công khai
                 </button>
               </div>
             </div>
             <div className="setting-item">
-              <label className="form-hint">FOLDER</label>
+              <label className="form-hint">Thư mục</label>
               <select
                 className="form-select"
                 value={folderId}
@@ -305,7 +378,7 @@ export default function CreateSet() {
           {/* Flashcards */}
           <div className="cards-section">
             <div className="cards-section-header">
-              <h2>Flashcards</h2>
+              <h2>Thẻ ghi nhớ</h2>
               <span className="cards-count">
                 {filledCards} / {cards.length}
               </span>
@@ -333,25 +406,25 @@ export default function CreateSet() {
                     <div className="card-field">
                       <input
                         type="text"
-                        placeholder="Enter term"
+                        placeholder="Nhập thuật ngữ"
                         value={card.term}
                         onChange={(e) =>
                           updateCard(card.id, "term", e.target.value)
                         }
                       />
-                      <span className="card-field-label">TERM</span>
+                      <span className="card-field-label">Thuật ngữ</span>
                     </div>
                     <div className="card-field-divider" />
                     <div className="card-field">
                       <input
                         type="text"
-                        placeholder="Enter definition"
+                        placeholder="Nhập định nghĩa"
                         value={card.definition}
                         onChange={(e) =>
                           updateCard(card.id, "definition", e.target.value)
                         }
                       />
-                      <span className="card-field-label">DEFINITION</span>
+                      <span className="card-field-label">Định nghĩa</span>
                     </div>
                   </div>
                 </div>
@@ -361,7 +434,7 @@ export default function CreateSet() {
             <div className="cards-add-row">
               <button type="button" className="btn-add-card" onClick={addCard}>
                 <Plus size={20} />
-                <span>ADD CARD</span>
+                <span>THÊM THẺ</span>
               </button>
               <button
                 type="button"
@@ -369,7 +442,15 @@ export default function CreateSet() {
                 onClick={openImport}
               >
                 <FileSpreadsheet size={18} />
-                <span>IMPORT CSV/EXCEL</span>
+                <span>NHẬP FILE CSV/EXCEL</span>
+              </button>
+              <button
+                type="button"
+                className="btn-ai-generate"
+                onClick={openAiModal}
+              >
+                <Sparkles size={18} />
+                <span>TẠO THẺ VỚI AI</span>
               </button>
             </div>
           </div>
@@ -381,7 +462,7 @@ export default function CreateSet() {
           >
             {loading
               ? "Creating set..."
-              : `Create set with ${filledCards} card${filledCards !== 1 ? "s" : ""}`}{" "}
+              : `Tạo với ${filledCards} thẻ${filledCards !== 1 ? "" : ""}`}{" "}
           </button>
         </form>
       </div>
@@ -395,9 +476,159 @@ export default function CreateSet() {
         onChange={handleFileChange}
       />
 
+      {/* AI Generate Modal */}
+      {aiModal && (
+        <div className="import-modal-overlay" onClick={() => setAiModal(false)}>
+          <div
+            className="import-modal ai-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="import-modal-header">
+              <h2>
+                <Sparkles size={20} />
+                Tạo thẻ với AI
+              </h2>
+              <button
+                type="button"
+                className="import-modal-close"
+                onClick={() => setAiModal(false)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {aiPreview.length === 0 ? (
+              <div className="ai-input-section">
+                <label className="ai-label">
+                  Chủ đề hoặc văn bản để tạo thẻ từ
+                </label>
+                <textarea
+                  className="ai-textarea"
+                  placeholder={`Ví dụ:\n• "Quang hợp trong thực vật"\n• "Closure trong JavaScript"\n• Dán một đoạn văn từ ghi chú của bạn...`}
+                  value={aiText}
+                  onChange={(e) => setAiText(e.target.value)}
+                  rows={6}
+                  autoFocus
+                />
+                <div className="ai-count-row">
+                  <label className="ai-label">Số lượng thẻ ghi nhớ</label>
+                  <div className="ai-count-controls">
+                    <button
+                      type="button"
+                      className="ai-count-btn"
+                      onClick={() => setAiCardCount((n) => Math.max(1, n - 1))}
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      className="ai-count-value"
+                      value={aiCardCount}
+                      min={1}
+                      max={20}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val)) setAiCardCount(Math.min(20, Math.max(1, val)));
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="ai-count-btn"
+                      onClick={() => setAiCardCount((n) => Math.min(20, n + 1))}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                {aiError && <p className="import-modal-error">{aiError}</p>}
+                <button
+                  type="button"
+                  className="ai-generate-btn"
+                  onClick={handleAiGenerate}
+                  disabled={aiLoading || !aiText.trim()}
+                >
+                  {aiLoading ? (
+                    <>
+                      <span className="ai-spinner" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> Generate {aiCardCount} cards
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="ai-preview-header">
+                  <p className="import-preview-label">
+                    {aiSelected.size} / {aiPreview.length} cards selected
+                  </p>
+                  <button
+                    type="button"
+                    className="ai-select-all"
+                    onClick={() =>
+                      setAiSelected(
+                        aiSelected.size === aiPreview.length
+                          ? new Set()
+                          : new Set(aiPreview.map((_, i) => i)),
+                      )
+                    }
+                  >
+                    {aiSelected.size === aiPreview.length
+                      ? "Deselect all"
+                      : "Select all"}
+                  </button>
+                </div>
+                <div className="import-preview-table-wrap ai-preview-list">
+                  {aiPreview.map((card, i) => (
+                    <label
+                      key={i}
+                      className={`ai-card-row ${aiSelected.has(i) ? "selected" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={aiSelected.has(i)}
+                        onChange={() => toggleAiSelect(i)}
+                      />
+                      <div className="ai-card-content">
+                        <span className="ai-card-term">{card.term}</span>
+                        <span className="ai-card-sep">→</span>
+                        <span className="ai-card-def">{card.definition}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <div className="import-modal-actions">
+                  <button
+                    type="button"
+                    className="import-btn-reselect"
+                    onClick={() => setAiPreview([])}
+                  >
+                    Try again
+                  </button>
+                  <button
+                    type="button"
+                    className="import-btn-confirm"
+                    onClick={confirmAiImport}
+                    disabled={aiSelected.size === 0}
+                  >
+                    <Plus size={16} />
+                    Add {aiSelected.size} cards
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Import Modal */}
       {importModal && (
-        <div className="import-modal-overlay" onClick={() => setImportModal(false)}>
+        <div
+          className="import-modal-overlay"
+          onClick={() => setImportModal(false)}
+        >
           <div className="import-modal" onClick={(e) => e.stopPropagation()}>
             <div className="import-modal-header">
               <h2>
@@ -414,7 +645,10 @@ export default function CreateSet() {
             </div>
 
             {importRows.length === 0 ? (
-              <div className="import-drop-area" onClick={() => fileInputRef.current?.click()}>
+              <div
+                className="import-drop-area"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Upload size={36} />
                 <p>Click to choose a file</p>
                 <span>.csv, .xlsx, .xls</span>
@@ -443,7 +677,9 @@ export default function CreateSet() {
                       <label>Term column</label>
                       <select
                         value={importTermCol}
-                        onChange={(e) => setImportTermCol(Number(e.target.value))}
+                        onChange={(e) =>
+                          setImportTermCol(Number(e.target.value))
+                        }
                       >
                         {Array.from({ length: colCount }, (_, i) => (
                           <option key={i} value={i}>
@@ -458,7 +694,9 @@ export default function CreateSet() {
                       <label>Definition column</label>
                       <select
                         value={importDefCol}
-                        onChange={(e) => setImportDefCol(Number(e.target.value))}
+                        onChange={(e) =>
+                          setImportDefCol(Number(e.target.value))
+                        }
                       >
                         {Array.from({ length: colCount }, (_, i) => (
                           <option key={i} value={i}>

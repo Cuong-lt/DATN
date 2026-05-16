@@ -51,7 +51,7 @@ const folderIconsList = [GraduationCap, LayoutGrid, BookOpen, Lightbulb];
 const setThumbColors = ["#2563eb", "#ea580c", "#16a34a", "#9333ea", "#dc2626"];
 
 const PAGE_SIZE = 10;
-const FOLDERS_PER_PAGE = 5;
+const FOLDERS_PER_PAGE = 6;
 
 export default function Library() {
   const navigate = useNavigate();
@@ -100,9 +100,7 @@ export default function Library() {
         ),
       );
       setEditingFolder(null);
-    } catch {
-      // silently fail
-    }
+    } catch {}
   };
 
   const handleDeleteFolder = async () => {
@@ -111,9 +109,7 @@ export default function Library() {
       await deleteFolder(deletingFolder.id);
       setFolders((prev) => prev.filter((f) => f.id !== deletingFolder.id));
       setDeletingFolder(null);
-    } catch {
-      // silently fail
-    }
+    } catch {}
   };
 
   const fetchSets = async (page: number) => {
@@ -127,9 +123,7 @@ export default function Library() {
         totalPages: setsRes.data.totalPages,
         last: setsRes.data.last,
       });
-    } catch {
-      // silently fail
-    }
+    } catch {}
   };
 
   const fetchFavorites = async () => {
@@ -137,9 +131,7 @@ export default function Library() {
       const favRes = await getMyFavorites();
       setFavoriteSets(favRes.data);
       setFavoriteIds(new Set(favRes.data.map((s) => s.id)));
-    } catch {
-      // silently fail
-    }
+    } catch {}
   };
 
   useEffect(() => {
@@ -151,7 +143,6 @@ export default function Library() {
         await fetchSets(0);
         await fetchFavorites();
       } catch {
-        // silently fail
       } finally {
         setLoading(false);
       }
@@ -173,9 +164,7 @@ export default function Library() {
         });
       }
       await fetchFavorites();
-    } catch {
-      // silently fail
-    }
+    } catch {}
   };
 
   const handlePageChange = async (page: number) => {
