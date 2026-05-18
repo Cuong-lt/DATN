@@ -391,6 +391,25 @@
 .btn-restart:hover {
   background: var(--accent-blue-hover);
 }
+.btn-retry-wrong {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: none;
+  color: var(--accent-red);
+  border: 1.5px solid var(--accent-red);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-retry-wrong:hover {
+  background: rgba(239, 68, 68, 0.08);
+}
 .btn-share {
   width: 56px;
   display: flex;

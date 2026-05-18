@@ -7,15 +7,16 @@ import {
   CheckCircle,
   XCircle,
   RotateCcw,
+  RefreshCw,
   Share2,
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { getUsername } from "../services/authService";
 import { getQuizById, type QuizResponse } from "../services/quizService";
 import "./QuizResults.css";
 
 interface LegacyAnswer {
+  flashcardId?: number;
   question: string;
   userAnswer: string;
   correctAnswer: string;
@@ -50,6 +51,7 @@ interface NormalizedResult {
   totalQuestions: number;
   correctCount: number;
   answers: {
+    flashcardId?: number;
     question: string;
     userAnswer: string;
     correctAnswer: string;
@@ -65,6 +67,7 @@ function normalizeFromApi(quiz: QuizResponse): NormalizedResult {
     totalQuestions: quiz.totalQuestion,
     correctCount: quiz.score,
     answers: quiz.answers.map((a) => ({
+      flashcardId: a.flashcardId,
       question: a.term,
       userAnswer: a.userAnswer,
       correctAnswer: a.correctAnswer,
@@ -88,8 +91,7 @@ export default function QuizResults() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const username = getUsername();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+const [sidebarOpen, setSidebarOpen] = useState(true);
   const [result, setResult] = useState<NormalizedResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -196,6 +198,9 @@ export default function QuizResults() {
 
   const { setTitle, setId, totalQuestions, correctCount, answers } = result;
   const scorePercent = Math.round((correctCount / totalQuestions) * 100);
+  const wrongIds = answers
+    .filter((a) => !a.correct && a.flashcardId != null)
+    .map((a) => a.flashcardId as number);
 
   const getMessage = () => {
     if (scorePercent >= 90) return "Tuyệt vời!";
@@ -365,8 +370,20 @@ export default function QuizResults() {
                 className="btn-restart"
                 onClick={() => navigate(`/quiz?id=${setId}`)}
               >
-                <RotateCcw size={18} /> Restart Quiz
+                <RotateCcw size={18} /> Làm lại Quiz
               </button>
+              {wrongIds.length > 0 && (
+                <button
+                  className="btn-retry-wrong"
+                  onClick={() =>
+                    navigate(`/quiz?id=${setId}`, {
+                      state: { retryIds: wrongIds },
+                    })
+                  }
+                >
+                  <RefreshCw size={18} /> Làm lại câu sai ({wrongIds.length})
+                </button>
+              )}
               <button className="btn-share">
                 <Share2 size={20} />
               </button>

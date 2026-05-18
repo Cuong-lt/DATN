@@ -162,6 +162,7 @@ public class UserServiceImpl implements UserService {
 
         List<Quiz> recentAll = quizRepository.findByUserAndCreatedAtAfter(user, since30);
 
+        // linkedHashMap có giữ thứ tự put vào
         Map<String, Integer> dayMap = new LinkedHashMap<>();
         for (int i = 29; i >= 0; i--) {
             dayMap.put(now.minusDays(i).toLocalDate().format(fmt), 0);
@@ -174,7 +175,7 @@ public class UserServiceImpl implements UserService {
                 .map(e -> new DailyActivityResponse(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
 
-
+        //quiz trong  20 ngày gần nhất
         List<Quiz> allQuizzes = quizRepository.findAllByUserOrderByCreatedAtDesc(user);
         List<QuizHistoryPoint> recentQuizzes = allQuizzes.stream()
                 .limit(20)
@@ -202,11 +203,16 @@ public class UserServiceImpl implements UserService {
                 ? (int) Math.round((double) totalCorrect / totalQuestions * 100) : 0;
 
 
+        //chức năng tính streak
+        // treeset tự động sắp xếp tăng dần
         Set<LocalDate> studyDays = new TreeSet<>();
+        int currentStreak = 0;
+        int longestStreak = 0;
+
         for (Quiz q : allQuizzes) {
             if (q.getCreatedAt() != null) studyDays.add(q.getCreatedAt().toLocalDate());
         }
-        int currentStreak = 0, longestStreak = 0;
+
         if (!studyDays.isEmpty()) {
             LocalDate today = LocalDate.now();
             LocalDate check = studyDays.contains(today) ? today : today.minusDays(1);

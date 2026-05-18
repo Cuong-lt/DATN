@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import {
   X,
   ChevronLeft,
@@ -20,6 +20,11 @@ interface QuizQuestion {
   options: string[];
 }
 
+interface QuizConfig {
+  questionCount: number | "all";
+  direction: "term-to-def" | "def-to-term";
+}
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -29,22 +34,43 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-function generateQuestions(set: FlashcardSetResponse): QuizQuestion[] {
-  const cards = set.flashcards;
-  if (cards.length < 2) return [];
+function generateQuestions(
+  set: FlashcardSetResponse,
+  config: QuizConfig,
+  retryIds?: number[]
+): QuizQuestion[] {
+  const allCards = set.flashcards;
+  const targetCards = retryIds?.length
+    ? allCards.filter((c) => retryIds.includes(c.id))
+    : allCards;
 
-  return shuffle(cards).map((card) => {
-    const wrongAnswers = shuffle(
-      cards.filter((c) => c.id !== card.id).map((c) => c.definition),
-    ).slice(0, 3);
+  if (!targetCards.length || allCards.length < 2) return [];
 
-    const options = shuffle([card.definition, ...wrongAnswers]);
+  const count =
+    config.questionCount === "all"
+      ? targetCards.length
+      : Math.min(config.questionCount, targetCards.length);
+
+  const selected = shuffle(targetCards).slice(0, count);
+
+  return shuffle(selected).map((card) => {
+    const wrongPool = allCards.filter((c) => c.id !== card.id);
+    const wrongAnswers = shuffle(wrongPool)
+      .slice(0, 3)
+      .map((c) =>
+        config.direction === "term-to-def" ? c.definition : c.term
+      );
+
+    const term =
+      config.direction === "term-to-def" ? card.term : card.definition;
+    const correctAnswer =
+      config.direction === "term-to-def" ? card.definition : card.term;
 
     return {
       flashcardId: card.id,
-      term: card.term,
-      correctAnswer: card.definition,
-      options,
+      term,
+      correctAnswer,
+      options: shuffle([correctAnswer, ...wrongAnswers]),
     };
   });
 }
@@ -61,12 +87,21 @@ const OPTION_COLORS = ["#6B7FE0", "#E0A96B", "#6BC9E0", "#B56BE0"];
 
 export default function Quiz() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const setId = Number(searchParams.get("id"));
+  const retryIds = (location.state as { retryIds?: number[] } | null)
+    ?.retryIds;
+  const isRetryMode = !!(retryIds?.length);
 
   const [studySet, setStudySet] = useState<FlashcardSetResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizConfig, setQuizConfig] = useState<QuizConfig>({
+    questionCount: "all",
+    direction: "term-to-def",
+  });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -90,15 +125,15 @@ export default function Quiz() {
         }
       })
       .catch(() =>
-        setError("Bộ thẻ không tồn tại hoặc bạn không có quyền truy cập."),
+        setError("Bộ thẻ không tồn tại hoặc bạn không có quyền truy cập.")
       )
       .finally(() => setLoading(false));
   }, [setId]);
 
   const questions = useMemo(() => {
-    if (!studySet) return [];
-    return generateQuestions(studySet);
-  }, [studySet]);
+    if (!studySet || !quizStarted) return [];
+    return generateQuestions(studySet, quizConfig, retryIds ?? undefined);
+  }, [studySet, quizStarted, quizConfig, retryIds]);
 
   const totalQuestions = questions.length;
   const currentQuestion = questions[currentIndex];
@@ -118,12 +153,12 @@ export default function Quiz() {
         replace: true,
       });
     } catch {
-      // Fallback: navigate with local data if API fails
       navigate("/quiz-results", {
         state: {
           setTitle: studySet?.title,
           setId,
           answers: finalAnswers.map((a) => ({
+            flashcardId: a.flashcardId,
             question: a.question,
             userAnswer: a.userAnswer,
             correctAnswer: a.correctAnswer,
@@ -215,7 +250,7 @@ export default function Quiz() {
     );
   }
 
-  if (error || !studySet || !currentQuestion) {
+  if (error || !studySet) {
     return (
       <div className="quiz-page">
         <header className="quiz-header">
@@ -231,6 +266,108 @@ export default function Quiz() {
     );
   }
 
+  // Config screen shown before quiz starts
+  if (!quizStarted) {
+    const availableCount = isRetryMode
+      ? (retryIds?.filter((id) =>
+          studySet.flashcards.some((c) => c.id === id)
+        ).length ?? 0)
+      : studySet.flashcards.length;
+    const countOptions = [10, 20].filter((n) => n < availableCount);
+
+    return (
+      <div className="quiz-page">
+        <header className="quiz-header">
+          <div className="quiz-header-left">
+            <h1>{studySet.title} - Quiz</h1>
+          </div>
+          <button className="quiz-close-btn" onClick={() => navigate(-1)}>
+            <X size={22} />
+          </button>
+        </header>
+
+        <div className="quiz-config-screen">
+          <div className="quiz-config-card">
+            {isRetryMode && (
+              <div className="quiz-retry-badge">
+                Ôn lại {availableCount} câu sai
+              </div>
+            )}
+
+            <div className="quiz-config-meta">
+              <h2 className="quiz-config-title">{studySet.title}</h2>
+              <p className="quiz-config-subtitle">
+                {availableCount} thẻ &middot; {studySet.flashcards.length} tổng
+              </p>
+            </div>
+
+            <div className="quiz-config-section">
+              <h3 className="quiz-config-section-label">Số câu hỏi</h3>
+              <div className="quiz-config-options">
+                {countOptions.map((n) => (
+                  <button
+                    key={n}
+                    className={`quiz-config-opt-btn ${quizConfig.questionCount === n ? "active" : ""}`}
+                    onClick={() =>
+                      setQuizConfig((c) => ({ ...c, questionCount: n }))
+                    }
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  className={`quiz-config-opt-btn ${quizConfig.questionCount === "all" ? "active" : ""}`}
+                  onClick={() =>
+                    setQuizConfig((c) => ({ ...c, questionCount: "all" }))
+                  }
+                >
+                  Tất cả ({availableCount})
+                </button>
+              </div>
+            </div>
+
+            <div className="quiz-config-section">
+              <h3 className="quiz-config-section-label">Hướng học</h3>
+              <div className="quiz-config-options">
+                <button
+                  className={`quiz-config-opt-btn ${quizConfig.direction === "term-to-def" ? "active" : ""}`}
+                  onClick={() =>
+                    setQuizConfig((c) => ({ ...c, direction: "term-to-def" }))
+                  }
+                >
+                  Thuật ngữ → Định nghĩa
+                </button>
+                <button
+                  className={`quiz-config-opt-btn ${quizConfig.direction === "def-to-term" ? "active" : ""}`}
+                  onClick={() =>
+                    setQuizConfig((c) => ({ ...c, direction: "def-to-term" }))
+                  }
+                >
+                  Định nghĩa → Thuật ngữ
+                </button>
+              </div>
+            </div>
+
+            <button
+              className="quiz-start-btn"
+              onClick={() => setQuizStarted(true)}
+            >
+              Bắt đầu Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!currentQuestion) {
+    return (
+      <div className="quiz-page">
+        <div className="quiz-error">Không thể tạo câu hỏi từ bộ thẻ này.</div>
+      </div>
+    );
+  }
+
   const getOptionClass = (idx: number) => {
     if (!showFeedback) return selected === idx ? "selected" : "";
     const opt = currentQuestion.options[idx];
@@ -238,6 +375,13 @@ export default function Quiz() {
     if (idx === selected) return "wrong";
     return "";
   };
+
+  const cardLabel =
+    quizConfig.direction === "term-to-def" ? "Thuật ngữ" : "Định nghĩa";
+  const selectLabel =
+    quizConfig.direction === "term-to-def"
+      ? "Chọn định nghĩa phù hợp"
+      : "Chọn thuật ngữ phù hợp";
 
   return (
     <div className="quiz-page">
@@ -298,7 +442,7 @@ export default function Quiz() {
         <main className="quiz-main">
           <div className="quiz-card-wrapper">
             <div className="quiz-card-header">
-              <span className="quiz-card-label">Định nghĩa</span>
+              <span className="quiz-card-label">{cardLabel}</span>
               <div className="quiz-card-actions">
                 <button className="quiz-action-btn hint-btn" title="Get a hint">
                   <Lightbulb size={16} />
@@ -318,7 +462,7 @@ export default function Quiz() {
             </div>
 
             <div className="quiz-select-section">
-              <h4 className="quiz-select-label">Chọn thuật ngữ phù hợp</h4>
+              <h4 className="quiz-select-label">{selectLabel}</h4>
               <div className="quiz-options-grid">
                 {currentQuestion.options.map((opt, i) => (
                   <button
