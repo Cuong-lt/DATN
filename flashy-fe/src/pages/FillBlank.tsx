@@ -190,6 +190,7 @@ export default function FillBlank() {
       setAnswers(finalAnswers);
       setDone(true);
     } else {
+      setAnswers(finalAnswers);
       setCurrentIndex((i) => i + 1);
       setInput("");
       setFeedback("none");
@@ -367,8 +368,9 @@ export default function FillBlank() {
     const skipped = answers.filter((a) => a.skipped).length;
     const wrong = answers.filter((a) => !a.correct && !a.skipped).length;
     const pct = Math.round((correct / total) * 100);
+    // skipped được tính là sai → đưa vào retry pool
     const wrongIds = answers
-      .filter((a) => !a.correct && !a.skipped)
+      .filter((a) => !a.correct)
       .map((a) => a.flashcardId);
 
     return (

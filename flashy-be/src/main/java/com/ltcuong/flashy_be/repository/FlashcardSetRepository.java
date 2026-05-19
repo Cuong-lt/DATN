@@ -20,6 +20,14 @@ public interface FlashcardSetRepository extends JpaRepository<FlashcardSet, Long
 
     long countByUser(User user);
 
+    Page<FlashcardSet> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    Page<FlashcardSet> findByVisibility(String visibility, Pageable pageable);
+
+    Page<FlashcardSet> findByTitleContainingIgnoreCaseAndVisibility(String title, String visibility, Pageable pageable);
+
+    long countByCreatedAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
     @Query("SELECT COUNT(s) FROM FlashcardSet s WHERE s.createdAt >= :since")
     long countNewSetsSince(@org.springframework.data.repository.query.Param("since") java.time.LocalDateTime since);
 }

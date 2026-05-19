@@ -21,6 +21,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByRole(String role);
 
+    long countByCreatedAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    java.util.List<User> findByRole(String role);
+
     @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :since")
     long countNewUsersSince(@Param("since") LocalDateTime since);
 

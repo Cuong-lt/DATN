@@ -45,9 +45,12 @@ export default function MainLayout() {
   const username = getUsername();
   const email = getEmail();
 
-  const isFullscreenRoute = ["/quiz", "/quiz-results", "/settings"].includes(
-    location.pathname,
-  );
+  const isFullscreenRoute = [
+    "/quiz",
+    "/quiz-results",
+    "/fill-blank",
+    "/settings",
+  ].includes(location.pathname);
 
   const createMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);

@@ -12,12 +12,15 @@ import {
   ChevronDown,
   LogOut,
   Home,
+  BookOpen,
 } from "lucide-react";
 import "./AdminLayout.css";
 
 const sidebarLinks = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", end: true },
   { to: "/admin/users", icon: Users, label: "Quản lý người dùng" },
+  { to: "/admin/sets", icon: BookOpen, label: "Quản lý nội dung" },
+  { to: "/admin/notifications", icon: Bell, label: "Gửi thông báo" },
   { to: "/home", icon: Home, label: "Về trang chính" },
 ];
 
@@ -91,10 +94,10 @@ export default function AdminLayout() {
               {profileOpen && (
                 <div className="dropdown-menu">
                   <a href="#" className="dropdown-item">
-                    <Settings size={16} /> Profile
+                    <Settings size={16} /> Thông tin cá nhân
                   </a>
                   <button onClick={handleLogout} className="dropdown-item">
-                    <LogOut size={16} /> Logout
+                    <LogOut size={16} /> Đăng xuất
                   </button>
                 </div>
               )}

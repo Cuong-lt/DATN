@@ -24,6 +24,8 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     List<Quiz> findAllByUserOrderByCreatedAtDesc(User user);
 
+    long countByCreatedAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
     @Query("SELECT COUNT(q) FROM Quiz q WHERE q.createdAt >= :since")
     long countNewQuizzesSince(@org.springframework.data.repository.query.Param("since") java.time.LocalDateTime since);
 

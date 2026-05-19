@@ -12,4 +12,6 @@ public interface FavoriteSetRepository extends JpaRepository<FavoriteSet, Long> 
     List<FavoriteSet> findAllByUser(User user);
     Optional<FavoriteSet> findByUserAndFlashcardSet(User user, FlashcardSet flashcardSet);
     boolean existsByUserAndFlashcardSet(User user, FlashcardSet flashcardSet);
+
+    long countByFlashcardSet(FlashcardSet flashcardSet);
 }

@@ -25,6 +25,8 @@ import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
+import AdminNotifications from './pages/AdminNotifications';
+import AdminSets from './pages/AdminSets';
 import AdminRoute from './components/AdminRoute';
 import PublicSearch from './pages/PublicSearch';
 
@@ -64,6 +66,8 @@ function App() {
           <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
+            <Route path="/admin/sets" element={<AdminSets />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
